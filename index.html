@@ -33,7 +33,7 @@
   <div id="meta-info"></div>
 
   <script>
-    fetch('data/_meta.json')
+    fetch('./data/_meta.json')
       .then(r => r.json())
       .then(meta => {
         const el = document.getElementById('status-text');
