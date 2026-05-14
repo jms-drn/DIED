@@ -1,0 +1,82 @@
+{
+  "esios_base_url": "https://api.esios.ree.es/indicators",
+  "timezone": "Europe/Madrid",
+
+  "frequent": {
+    "_comment": "Refreshed every 30 min during market hours (06:00-23:00 CET)",
+
+    "spot_price": {
+      "600": "Precio mercado SPOT Diario"
+    },
+
+    "generation_realtime": {
+      "10195": "Generación medida total tipo producción",
+      "1295":  "Generación T.Real Solar fotovoltaica",
+      "2038":  "Generación T.Real eólica nacional",
+      "2039":  "Generación T.Real nuclear nacional",
+      "2041":  "Generación T.Real ciclo combinado nacional",
+      "10035": "Generación medida Hidráulica",
+      "1294":  "Generación T.Real Solar térmica",
+      "1297":  "Generación T.Real Cogeneración y resto",
+      "2066":  "Generación T.Real turbinación bombeo Nacional"
+    },
+
+    "demand": {
+      "10004": "Demanda real suma de generación",
+      "10249": "Previsión de la demanda residual"
+    },
+
+    "curtailments": {
+      "2276":  "ERNI Total SNP",
+      "10462": "% ERNI Total",
+      "10460": "% ERNI RRTT RTT",
+      "10461": "% ERNI RRTT RTD"
+    },
+
+    "tech_restrictions_pbf": {
+      "701": "Energía asignada RRTT diario Fase I subir",
+      "702": "Energía asignada RRTT diario Fase I bajar",
+      "703": "Energía asignada RRTT diario Fase II subir",
+      "704": "Energía asignada RRTT diario Fase II bajar",
+      "705": "Precio medio RRTT diario Fase I subir",
+      "706": "Precio medio RRTT diario Fase I bajar",
+      "709": "Coste solución RRTT diario (PBF)"
+    },
+
+    "tech_restrictions_rt": {
+      "722": "Precio medio RRTT tiempo real subir",
+      "723": "Precio medio RRTT tiempo real bajar",
+      "724": "Coste RRTT tiempo real"
+    },
+
+    "ancillary_services": {
+      "10388": "Precio medio ponderado banda secundaria subir",
+      "10463": "Precio medio ponderado banda secundaria bajar",
+      "10386": "Precio medio ponderado terciaria subir",
+      "10387": "Precio medio ponderado terciaria bajar"
+    },
+
+    "cross_border_flows": {
+      "10207": "Saldo neto interconexión Francia telemedidas",
+      "10208": "Saldo neto interconexión Portugal telemedidas",
+      "10209": "Saldo neto interconexión Marruecos telemedidas"
+    },
+
+    "forecasts": {
+      "541": "Previsión producción eólica peninsular"
+    }
+  },
+
+  "daily": {
+    "_comment": "Refreshed once daily at ~07:00 CET",
+
+    "installed_capacity": {
+      "1486": "Potencia instalada solar fotovoltaica",
+      "1485": "Potencia instalada eólica",
+      "469":  "Potencia instalada ciclo combinado",
+      "464":  "Potencia instalada hidráulica UGH",
+      "1477": "Potencia instalada nuclear",
+      "465":  "Potencia instalada turbinación bombeo"
+    }
+  }
+}

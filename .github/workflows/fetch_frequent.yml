@@ -1,0 +1,41 @@
+name: Fetch ESIOS data (frequent)
+
+on:
+  schedule:
+    # Every 30 minutes, 06:00-23:00 CET (04:00-21:00 UTC)
+    # GitHub cron is UTC, so we run :00 and :30 from 04-21 UTC
+    - cron: '0,30 4-21 * * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch frequent indicators
+        env:
+          ESIOS_TOKEN: ${{ secrets.ESIOS_TOKEN }}
+        run: python fetch_data.py --mode frequent
+
+      - name: Commit and push data
+        run: |
+          git config user.name "DIED Bot"
+          git config user.email "bot@died.dashboard"
+          git add data/
+          # Only commit if there are changes
+          git diff --staged --quiet || git commit -m "data: frequent refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
