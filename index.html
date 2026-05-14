@@ -1,56 +1,685 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>DIED — Doran Iberian Energy Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0d10;
-    color: #e8ece8;
-    font-family: system-ui, -apple-system, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-    padding: 40px;
-  }
-  h1 { font-size: 2.5rem; letter-spacing: -0.02em; margin-bottom: 8px; }
-  h1 em { font-style: italic; font-weight: 300; color: #d4ff4d; }
-  p { color: #6b7470; max-width: 500px; line-height: 1.6; margin-top: 12px; }
-  .status { margin-top: 24px; font-family: monospace; font-size: 13px; color: #6b7470; }
-  .status span { color: #d4ff4d; }
-  #meta-info { margin-top: 12px; font-family: monospace; font-size: 12px; color: #4a5560; }
+:root{
+  --bg-0:#0a0d10;--bg-1:#0f1318;--bg-2:#161b22;--bg-3:#1d242d;
+  --line:#232b35;--line-soft:#1a2129;
+  --text-0:#e8ece8;--text-1:#a8b0a8;--text-2:#6b7470;
+  --accent:#d4ff4d;--accent-dim:#8a9e3d;
+  --warm:#ff8c42;--hot:#ff5757;--cool:#4dc8ff;--green:#6dd47e;--purple:#b794f4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg-0);color:var(--text-0);font-family:'Inter Tight',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");opacity:0.025;pointer-events:none;z-index:1000;mix-blend-mode:overlay}
+.mono{font-family:'JetBrains Mono',monospace;font-feature-settings:'tnum'}
+.serif{font-family:'Fraunces',serif}
+
+/* HEADER */
+header{border-bottom:1px solid var(--line);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;background:var(--bg-0);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+.brand{display:flex;align-items:baseline;gap:14px}
+.brand-mark{font-family:'Fraunces',serif;font-weight:600;font-size:20px;letter-spacing:-0.02em}
+.brand-mark em{font-style:italic;font-weight:300;color:var(--accent)}
+.brand-sub{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.12em}
+.header-meta{display:flex;gap:28px;align-items:center;font-size:12px}
+.live-dot{display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:50%;margin-right:6px;animation:pulse 2s infinite;box-shadow:0 0 8px var(--accent)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.meta-block{color:var(--text-1)}.meta-block strong{color:var(--text-0);font-weight:500}
+
+/* FILTER */
+.filter-row{display:flex;gap:6px;padding:12px 32px;border-bottom:1px solid var(--line);background:var(--bg-1);align-items:center;flex-wrap:wrap}
+.filter-label{font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-2);margin-right:12px}
+.filter-btn{background:transparent;border:1px solid var(--line);color:var(--text-1);padding:5px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border-radius:2px;transition:all 0.15s}
+.filter-btn:hover{color:var(--text-0);border-color:var(--text-2)}
+.filter-btn.active{background:var(--accent);color:var(--bg-0);border-color:var(--accent);font-weight:600}
+.filter-spacer{flex:1}
+
+/* LAYOUT */
+.container{padding:24px 32px 80px;max-width:1600px;margin:0 auto}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;margin-bottom:24px}
+@media(max-width:1100px){.hero{grid-template-columns:1fr}}
+.card{background:var(--bg-1);border:1px solid var(--line);border-radius:4px;padding:20px;position:relative}
+.card-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:0.16em;color:var(--text-2);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.card-title{font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em;margin-bottom:16px;line-height:1.15}
+.card-title em{font-style:italic;color:var(--text-1)}
+
+/* PRICE */
+.price-now{display:flex;align-items:baseline;gap:18px;margin-bottom:6px;flex-wrap:wrap}
+.price-value{font-family:'Fraunces',serif;font-weight:500;font-size:64px;letter-spacing:-0.04em;line-height:0.95;color:var(--accent)}
+.price-unit{font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.1em}
+.price-delta{font-family:'JetBrains Mono',monospace;font-size:13px}
+.price-context{color:var(--text-1);font-size:13px;margin-bottom:18px}
+.price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:18px}
+@media(max-width:800px){.price-grid{grid-template-columns:repeat(2,1fr)}}
+.price-cell{background:var(--bg-1);padding:12px 14px}
+.price-cell-label{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-2);margin-bottom:4px}
+.price-cell-value{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:500}
+.price-cell-sub{font-size:10px;color:var(--text-2);margin-top:2px;font-family:'JetBrains Mono',monospace}
+
+.chart-wrap{position:relative;height:240px;margin-top:8px}
+.chart-wrap.tall{height:300px}
+
+/* SECTIONS */
+.section-head{display:flex;justify-content:space-between;align-items:baseline;margin:36px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line-soft)}
+.section-title{font-family:'Fraunces',serif;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.22em;color:var(--text-1)}
+.section-title em{font-style:italic;color:var(--accent);text-transform:none;letter-spacing:0;font-weight:400;font-size:14px}
+.section-aside{font-size:11px;color:var(--text-2);font-family:'JetBrains Mono',monospace}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.grid-mix{display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+@media(max-width:1100px){.grid-2,.grid-3,.grid-mix{grid-template-columns:1fr}}
+
+/* MIX LIST */
+.mix-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.mix-row{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line-soft)}
+.mix-row:last-child{border-bottom:none}
+.mix-swatch{width:10px;height:10px;border-radius:1px}
+.mix-name{font-size:13px}.mix-pct{font-family:'JetBrains Mono',monospace;color:var(--text-1);font-size:12px}
+.mix-mw{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-0);min-width:70px;text-align:right}
+
+/* STAT BLOCKS */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:14px}
+@media(max-width:800px){.stat-row{grid-template-columns:1fr}}
+.stat-block{border-left:2px solid var(--line);padding-left:12px}
+.stat-block.alert{border-left-color:var(--hot)}.stat-block.warn{border-left-color:var(--warm)}
+.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-2);margin-bottom:4px}
+.stat-value{font-family:'Fraunces',serif;font-size:26px;font-weight:500;line-height:1;letter-spacing:-0.02em}
+.stat-sub{font-size:11px;color:var(--text-1);margin-top:4px;font-family:'JetBrains Mono',monospace}
+
+/* TABLE */
+table.anc{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+table.anc th{text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-2);font-weight:500}
+table.anc th.right,table.anc td.right{text-align:right;padding-right:0}
+table.anc td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line-soft);font-family:'JetBrains Mono',monospace;color:var(--text-0)}
+table.anc td.name{font-family:'Inter Tight',sans-serif}
+table.anc td.muted{color:var(--text-2)}
+table.anc tr:last-child td{border-bottom:none}
+.anc-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:8px;vertical-align:middle}
+
+/* FLOWS */
+.flow-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px;background:var(--bg-2);border-radius:3px;gap:14px;margin-bottom:8px}
+.flow-country{font-family:'Fraunces',serif;font-size:18px}
+.flow-country.right{text-align:right}
+.flow-arrow{display:flex;flex-direction:column;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px}
+.flow-arrow .mw{font-size:15px;font-weight:600;color:var(--text-0)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--line);padding:20px 32px;color:var(--text-2);font-size:11px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;gap:8px}
+footer em{color:var(--accent);font-style:normal}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--text-2);font-family:'JetBrains Mono',monospace;font-size:12px}
+.loading::after{content:'';display:block;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:12px auto 0}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-  <h1>Doran <em>Iberian</em> Energy Dashboard</h1>
-  <p>The full dashboard is coming soon. This page confirms GitHub Pages is serving correctly and data fetching is operational.</p>
-  <div class="status">Status: <span id="status-text">checking...</span></div>
-  <div id="meta-info"></div>
 
-  <script>
-    fetch('./data/_meta.json')
-      .then(r => r.json())
-      .then(meta => {
-        const el = document.getElementById('status-text');
-        const info = document.getElementById('meta-info');
-        if (meta.last_refresh) {
-          el.textContent = `operational — ${meta.indicators_fetched} indicators`;
-          el.style.color = '#d4ff4d';
-          info.textContent = `Last refresh: ${meta.last_refresh} (${meta.mode})`;
-        } else {
-          el.textContent = 'awaiting first data fetch';
-          el.style.color = '#ff8c42';
-          info.textContent = 'Run the GitHub Action manually or wait for the schedule.';
-        }
-      })
-      .catch(() => {
-        document.getElementById('status-text').textContent = 'no data yet';
-      });
-  </script>
+<header>
+  <div class="brand">
+    <div class="brand-mark">DIED <em>·</em> Iberia Power</div>
+    <div class="brand-sub">Internal · v0.2 live</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-block"><span class="live-dot"></span><span id="refresh-status">loading...</span></div>
+    <div class="meta-block">Source: <strong>ESIOS / REE</strong></div>
+    <div class="meta-block" id="header-time"></div>
+  </div>
+</header>
+
+<div class="filter-row">
+  <span class="filter-label">View</span>
+  <button class="filter-btn active" data-view="today" onclick="setView('today',this)">Today</button>
+  <button class="filter-btn" data-view="yesterday" onclick="setView('yesterday',this)">Yesterday</button>
+  <button class="filter-btn" data-view="7d" onclick="setView('7d',this)">7 days</button>
+</div>
+
+<div class="container" id="main-container">
+  <div class="loading" id="loading-msg">Fetching live ESIOS data…</div>
+</div>
+
+<footer>
+  <div>DIED — Doran Iberian Energy Dashboard · ESIOS API · auto-refresh every 30 min</div>
+  <div id="footer-refresh"></div>
+</footer>
+
+<script>
+const BASE = './data/';
+const GEO_ES = [3, 8741]; // España or Península
+const GEO_PT = [1];
+const GEO_FR = [2];
+
+const GEN_TECHS = [
+  {id:'1295', name:'Solar PV',      color:'#d4ff4d'},
+  {id:'2038', name:'Wind',          color:'#6dd47e'},
+  {id:'2039', name:'Nuclear',       color:'#b794f4'},
+  {id:'2041', name:'CCGT',          color:'#ff8c42'},
+  {id:'10035',name:'Hydro',         color:'#4dc8ff'},
+  {id:'1294', name:'Solar thermal', color:'#e8c547'},
+  {id:'1297', name:'Cogen & other', color:'#ff5757'},
+  {id:'2066', name:'Pumped hydro',  color:'#7a8a99'},
+];
+
+const FLOW_IDS = {
+  fr: '10207', pt: '10208', ma: '10209'
+};
+
+const ANC_IDS = {
+  sec_up:  '10388', sec_down: '10463',
+  ter_up:  '10386', ter_down: '10387'
+};
+
+const RESTRICT_PBF = {
+  e_up_1:'701', e_down_1:'702', e_up_2:'703', e_down_2:'704',
+  p_up_1:'705', p_down_1:'706', cost:'709'
+};
+
+const RESTRICT_RT = { p_up:'722', p_down:'723', cost:'724' };
+
+// Chart.js defaults
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 10;
+Chart.defaults.color = '#6b7470';
+Chart.defaults.borderColor = '#1a2129';
+
+let DATA = {};
+let currentView = 'today';
+let charts = {};
+
+// ── Helpers ──
+function filterByGeo(values, geoIds) {
+  if (!values || !values.length) return values || [];
+  return values.filter(v => geoIds.includes(v.geo_id));
+}
+
+function parseTime(v) { return new Date(v.datetime_utc || v.datetime); }
+
+function todayRange() {
+  const now = new Date();
+  const start = new Date(now); start.setHours(0,0,0,0);
+  const end = new Date(now); end.setHours(23,59,59,999);
+  return {start, end};
+}
+
+function yesterdayRange() {
+  const now = new Date();
+  const start = new Date(now); start.setDate(start.getDate()-1); start.setHours(0,0,0,0);
+  const end = new Date(now); end.setDate(end.getDate()-1); end.setHours(23,59,59,999);
+  return {start, end};
+}
+
+function weekRange() {
+  const now = new Date();
+  const start = new Date(now); start.setDate(start.getDate()-7); start.setHours(0,0,0,0);
+  return {start, end: now};
+}
+
+function getRange() {
+  if (currentView === 'yesterday') return yesterdayRange();
+  if (currentView === '7d') return weekRange();
+  return todayRange();
+}
+
+function filterByRange(values) {
+  const {start, end} = getRange();
+  return (values||[]).filter(v => { const t = parseTime(v); return t >= start && t <= end; });
+}
+
+function hourly(values) {
+  // Aggregate sub-hourly to hourly (take last value per hour)
+  const byHour = {};
+  values.forEach(v => {
+    const t = parseTime(v);
+    const key = t.toISOString().slice(0,13);
+    byHour[key] = v;
+  });
+  return Object.values(byHour).sort((a,b) => parseTime(a) - parseTime(b));
+}
+
+function fmt(n, d=2) { return n != null ? n.toFixed(d) : '—'; }
+function fmtInt(n) { return n != null ? Math.round(n).toLocaleString() : '—'; }
+
+// ── Data loading ──
+async function loadJSON(id) {
+  try {
+    const r = await fetch(`${BASE}${id}.json`);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function loadAll() {
+  const ids = [
+    '600', '_meta',
+    ...GEN_TECHS.map(t=>t.id),
+    ...Object.values(FLOW_IDS),
+    ...Object.values(ANC_IDS),
+    ...Object.values(RESTRICT_PBF),
+    ...Object.values(RESTRICT_RT),
+    '10004','2276','10462','541'
+  ];
+  const unique = [...new Set(ids)];
+  const results = await Promise.all(unique.map(id => loadJSON(id)));
+  unique.forEach((id, i) => { if (results[i]) DATA[id] = results[i]; });
+}
+
+// ── Rendering ──
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function setView(view, btn) {
+  currentView = view;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  destroyCharts();
+  render();
+}
+
+function render() {
+  const meta = DATA['_meta'];
+  if (meta && meta.last_refresh) {
+    const d = new Date(meta.last_refresh);
+    document.getElementById('refresh-status').innerHTML =
+      `data refreshed <strong>${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} UTC</strong>`;
+    document.getElementById('footer-refresh').innerHTML =
+      `Last sync <em>${d.toISOString().slice(0,16).replace('T',' ')} UTC</em>`;
+  }
+  document.getElementById('header-time').innerHTML =
+    new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) +
+    ' · <strong>' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + '</strong>';
+
+  const spot = DATA['600'];
+  if (!spot) { document.getElementById('main-container').innerHTML = '<div class="loading">No data available</div>'; return; }
+
+  const esSpot = filterByRange(filterByGeo(spot.values, [3]));
+  const ptSpot = filterByRange(filterByGeo(spot.values, [1]));
+  const esHourly = hourly(esSpot);
+  const ptHourly = hourly(ptSpot);
+
+  // Current price (latest value)
+  const latest = esHourly.length ? esHourly[esHourly.length-1] : null;
+  const latestPt = ptHourly.length ? ptHourly[ptHourly.length-1] : null;
+
+  // Day stats
+  const prices = esHourly.map(v=>v.value);
+  const dayAvg = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : null;
+  const dayMax = prices.length ? Math.max(...prices) : null;
+  const dayMin = prices.length ? Math.min(...prices) : null;
+  const maxHour = esHourly.find(v=>v.value===dayMax);
+  const minHour = esHourly.find(v=>v.value===dayMin);
+
+  // Spread ES-PT
+  const spread = (latest && latestPt) ? latest.value - latestPt.value : null;
+
+  // Generation latest values
+  const genLatest = GEN_TECHS.map(t => {
+    const d = DATA[t.id];
+    if (!d || !d.values.length) return {...t, mw: null};
+    const esVals = filterByRange(filterByGeo(d.values, GEO_ES));
+    const last = esVals.length ? esVals[esVals.length-1] : null;
+    return {...t, mw: last ? last.value : null};
+  });
+  const totalGen = genLatest.reduce((s,g) => s + (g.mw||0), 0);
+
+  // Flows latest
+  const flowData = {};
+  ['fr','pt','ma'].forEach(key => {
+    const d = DATA[FLOW_IDS[key]];
+    if (!d) { flowData[key] = null; return; }
+    const vals = filterByRange(d.values);
+    flowData[key] = vals.length ? vals[vals.length-1].value : null;
+  });
+
+  // Build HTML
+  const container = document.getElementById('main-container');
+  container.innerHTML = `
+  <!-- HERO -->
+  <div class="hero">
+    <div class="card">
+      <div class="card-eyebrow"><span>Day-ahead spot · MIBEL</span><span class="mono">ID 600</span></div>
+      <h2 class="card-title">Spot price <em>${currentView}</em></h2>
+      <div class="price-now">
+        <div class="price-value">${latest ? fmt(latest.value) : '—'}</div>
+        <div>
+          <div class="price-unit">€/MWh · ${latest ? parseTime(latest).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''} CET</div>
+          ${spread !== null && spread !== 0 ? `<div class="price-delta" style="color:${spread>0?'var(--hot)':'var(--green)'}">ES-PT spread: ${spread>0?'+':''}${fmt(spread)} €/MWh</div>` : `<div class="price-delta" style="color:var(--green)">ES = PT (no spread)</div>`}
+        </div>
+      </div>
+      <div class="price-context">
+        Day avg <span class="mono" style="color:var(--text-0)">€${fmt(dayAvg)}</span> ·
+        Range <span class="mono">€${fmt(dayMin)}</span> – <span class="mono" style="color:var(--accent)">€${fmt(dayMax)}</span>
+      </div>
+      <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+      <div class="price-grid">
+        <div class="price-cell">
+          <div class="price-cell-label">Day avg</div>
+          <div class="price-cell-value">€${fmt(dayAvg)}</div>
+        </div>
+        <div class="price-cell">
+          <div class="price-cell-label">Peak</div>
+          <div class="price-cell-value">€${fmt(dayMax)}</div>
+          <div class="price-cell-sub">${maxHour ? parseTime(maxHour).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+        </div>
+        <div class="price-cell">
+          <div class="price-cell-label">Low</div>
+          <div class="price-cell-value">€${fmt(dayMin)}</div>
+          <div class="price-cell-sub">${minHour ? parseTime(minHour).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''}</div>
+        </div>
+        <div class="price-cell">
+          <div class="price-cell-label">Portugal</div>
+          <div class="price-cell-value">€${latestPt ? fmt(latestPt.value) : '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GEN MIX SNAPSHOT -->
+    <div class="card">
+      <div class="card-eyebrow"><span>Generation · latest reading</span><span class="mono">${totalGen ? fmtInt(totalGen)+' MW' : ''}</span></div>
+      <h2 class="card-title">Current <em>generation mix</em></h2>
+      <div class="mix-list">
+        ${genLatest.sort((a,b)=>(b.mw||0)-(a.mw||0)).map(g => `
+          <div class="mix-row">
+            <div class="mix-swatch" style="background:${g.color}"></div>
+            <div class="mix-name">${g.name}</div>
+            <div class="mix-pct">${totalGen && g.mw ? fmt((g.mw/totalGen)*100,1)+'%' : '—'}</div>
+            <div class="mix-mw">${g.mw ? fmtInt(g.mw)+' MW' : '—'}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="chart-wrap" style="margin-top:16px"><canvas id="genPieChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- GENERATION STACKED -->
+  <div class="section-head">
+    <div class="section-title">01 · Generation <em>mix</em></div>
+    <div class="section-aside">stacked area · MW · ${currentView}</div>
+  </div>
+  <div class="card">
+    <div class="card-eyebrow"><span>Spain · by technology</span><span class="mono">real-time 5-min</span></div>
+    <div class="chart-wrap tall"><canvas id="genStackChart"></canvas></div>
+  </div>
+
+  <!-- CROSS-BORDER FLOWS -->
+  <div class="section-head">
+    <div class="section-title">02 · Cross-border <em>flows</em></div>
+    <div class="section-aside">MW · positive = ES exporting</div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-eyebrow"><span>Live interconnector balance</span><span class="mono">telemedidas</span></div>
+      <h3 class="card-title">Inter<em>connectors</em></h3>
+      ${renderFlow('🇪🇸 ES','🇫🇷 FR', flowData.fr)}
+      ${renderFlow('🇪🇸 ES','🇵🇹 PT', flowData.pt)}
+      ${renderFlow('🇪🇸 ES','🇲🇦 MA', flowData.ma)}
+      <div style="font-size:11px;color:var(--text-2);margin-top:12px;font-family:'JetBrains Mono',monospace;">
+        Net position: <span style="color:var(--accent)">${fmtInt((flowData.fr||0)+(flowData.pt||0)+(flowData.ma||0))} MW ${((flowData.fr||0)+(flowData.pt||0)+(flowData.ma||0))>=0?'exporter':'importer'}</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-eyebrow"><span>France flow · ${currentView}</span><span class="mono">ID 10207</span></div>
+      <h3 class="card-title">ES ↔ FR <em>flow</em></h3>
+      <div class="chart-wrap"><canvas id="flowChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ANCILLARY SERVICES -->
+  <div class="section-head">
+    <div class="section-title">03 · Ancillary <em>services</em></div>
+    <div class="section-aside">secondary &amp; tertiary reserves · €/MWh</div>
+  </div>
+  <div class="card">
+    <div class="card-eyebrow"><span>Reserve prices · ${currentView}</span><span class="mono">weighted avg</span></div>
+    <h3 class="card-title">Reserve <em>prices</em></h3>
+    <div class="chart-wrap tall"><canvas id="ancChart"></canvas></div>
+  </div>
+
+  <!-- TECHNICAL RESTRICTIONS -->
+  <div class="section-head">
+    <div class="section-title">04 · Technical <em>restrictions</em></div>
+    <div class="section-aside">PBF (day-ahead) + real-time</div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-eyebrow"><span>PBF day-ahead restrictions</span><span class="mono">energy MWh</span></div>
+      <h3 class="card-title">Day-ahead <em>PBF</em></h3>
+      <div class="chart-wrap"><canvas id="pbfChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-eyebrow"><span>Real-time restrictions</span><span class="mono">prices €/MWh</span></div>
+      <h3 class="card-title">Real-time <em>RT</em></h3>
+      <div class="chart-wrap"><canvas id="rtChart"></canvas></div>
+    </div>
+  </div>
+  `;
+
+  // ── CHARTS ──
+  renderPriceChart(esHourly, ptHourly);
+  renderGenPie(genLatest, totalGen);
+  renderGenStack();
+  renderFlowChart();
+  renderAncChart();
+  renderPbfChart();
+  renderRtChart();
+}
+
+function renderFlow(from, to, mw) {
+  const exporting = mw >= 0;
+  const arrow = exporting
+    ? `<svg width="60" height="14" viewBox="0 0 60 14"><path d="M0 7 L52 7 M48 3 L52 7 L48 11" stroke="#4dc8ff" stroke-width="1.5" fill="none"/></svg>`
+    : `<svg width="60" height="14" viewBox="0 0 60 14"><path d="M60 7 L8 7 M12 3 L8 7 L12 11" stroke="#ff8c42" stroke-width="1.5" fill="none"/></svg>`;
+  return `<div class="flow-row">
+    <div class="flow-country">${from}</div>
+    <div class="flow-arrow">
+      <span class="mw">${mw!=null ? (exporting?'+':'')+fmtInt(mw)+' MW' : '—'}</span>
+      ${arrow}
+      <span>${mw!=null ? (exporting?'exporting':'importing') : ''}</span>
+    </div>
+    <div class="flow-country right">${to}</div>
+  </div>`;
+}
+
+function renderPriceChart(esData, ptData) {
+  const ctx = document.getElementById('priceChart');
+  if (!ctx) return;
+  const esPoints = esData.map(v => ({x: parseTime(v), y: v.value}));
+  const ptPoints = ptData.map(v => ({x: parseTime(v), y: v.value}));
+  charts.price = new Chart(ctx, {
+    type:'line',
+    data:{datasets:[
+      {label:'Portugal', data:ptPoints, borderColor:'#3a4350', backgroundColor:'transparent', borderWidth:1.2, borderDash:[3,3], pointRadius:0, tension:0.3},
+      {label:'Spain', data:esPoints, borderColor:'#d4ff4d', backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(212,255,77,0.25)');g.addColorStop(1,'rgba(212,255,77,0)');return g;}, borderWidth:2, pointRadius:0, fill:true, tension:0.3}
+    ]},
+    options:{
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},
+      scales:{x:{type:'time',time:{unit: currentView==='7d'?'day':'hour', displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
+              y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},
+      maintainAspectRatio:false, interaction:{mode:'index',intersect:false}
+    }
+  });
+}
+
+function renderGenPie(genData, total) {
+  const ctx = document.getElementById('genPieChart');
+  if (!ctx || !total) return;
+  const filtered = genData.filter(g => g.mw > 0);
+  charts.genPie = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels: filtered.map(g=>g.name),
+      datasets:[{data: filtered.map(g=>g.mw), backgroundColor: filtered.map(g=>g.color), borderWidth:0}]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      cutout:'65%',
+      maintainAspectRatio:false
+    }
+  });
+}
+
+function renderGenStack() {
+  const ctx = document.getElementById('genStackChart');
+  if (!ctx) return;
+  const datasets = GEN_TECHS.map(tech => {
+    const d = DATA[tech.id];
+    if (!d) return null;
+    const vals = filterByRange(filterByGeo(d.values, GEO_ES));
+    // Downsample to ~15 min for performance
+    const sampled = [];
+    for (let i=0; i<vals.length; i+=3) sampled.push(vals[i]);
+    return {
+      label: tech.name,
+      data: sampled.map(v => ({x: parseTime(v), y: v.value})),
+      borderColor: tech.color,
+      backgroundColor: tech.color + '80',
+      fill: true, borderWidth: 0.5, pointRadius: 0, tension: 0.3
+    };
+  }).filter(Boolean);
+
+  charts.genStack = new Chart(ctx, {
+    type:'line',
+    data:{datasets},
+    options:{
+      plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},
+      scales:{
+        x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},stacked:true,grid:{display:false}},
+        y:{stacked:true,grid:{color:'#1a2129'},ticks:{callback:v=>(v/1000).toFixed(0)+' GW'}}
+      },
+      maintainAspectRatio:false, interaction:{mode:'index',intersect:false}
+    }
+  });
+}
+
+function renderFlowChart() {
+  const ctx = document.getElementById('flowChart');
+  if (!ctx) return;
+  const d = DATA[FLOW_IDS.fr];
+  if (!d) return;
+  const vals = hourly(filterByRange(d.values));
+  const points = vals.map(v => ({x: parseTime(v), y: v.value}));
+
+  charts.flow = new Chart(ctx, {
+    type:'bar',
+    data:{datasets:[{
+      label:'ES→FR (MW)',
+      data:points,
+      backgroundColor: points.map(p => p.y >= 0 ? '#4dc8ff' : '#ff8c42'),
+      borderWidth:0
+    }]},
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
+        y:{grid:{color:'#1a2129'},ticks:{callback:v=>v+' MW'}}
+      },
+      maintainAspectRatio:false
+    }
+  });
+}
+
+function renderAncChart() {
+  const ctx = document.getElementById('ancChart');
+  if (!ctx) return;
+  const colors = {sec_up:'#d4ff4d', sec_down:'#8a9e3d', ter_up:'#4dc8ff', ter_down:'#2a7a9e'};
+  const labels = {sec_up:'Secondary ↑', sec_down:'Secondary ↓', ter_up:'Tertiary ↑', ter_down:'Tertiary ↓'};
+  const datasets = Object.entries(ANC_IDS).map(([key, id]) => {
+    const d = DATA[id];
+    if (!d) return null;
+    const vals = hourly(filterByRange(d.values));
+    return {
+      label: labels[key],
+      data: vals.map(v => ({x: parseTime(v), y: v.value})),
+      borderColor: colors[key],
+      backgroundColor: 'transparent',
+      borderWidth: 1.5, pointRadius: 0, tension: 0.3
+    };
+  }).filter(Boolean);
+
+  charts.anc = new Chart(ctx, {
+    type:'line',
+    data:{datasets},
+    options:{
+      plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},
+      scales:{
+        x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
+        y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}
+      },
+      maintainAspectRatio:false, interaction:{mode:'index',intersect:false}
+    }
+  });
+}
+
+function renderPbfChart() {
+  const ctx = document.getElementById('pbfChart');
+  if (!ctx) return;
+  const upD = DATA[RESTRICT_PBF.e_up_1];
+  const downD = DATA[RESTRICT_PBF.e_down_1];
+  const datasets = [];
+  if (upD) {
+    const vals = hourly(filterByRange(upD.values));
+    datasets.push({label:'Phase I ↑',data:vals.map(v=>({x:parseTime(v),y:v.value})),backgroundColor:'#ff5757',borderWidth:0});
+  }
+  if (downD) {
+    const vals = hourly(filterByRange(downD.values));
+    datasets.push({label:'Phase I ↓',data:vals.map(v=>({x:parseTime(v),y:-Math.abs(v.value)})),backgroundColor:'#4dc8ff',borderWidth:0});
+  }
+  charts.pbf = new Chart(ctx, {
+    type:'bar',
+    data:{datasets},
+    options:{
+      plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10}}},
+      scales:{
+        x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
+        y:{grid:{color:'#1a2129'},ticks:{callback:v=>v+' MWh'}}
+      },
+      maintainAspectRatio:false
+    }
+  });
+}
+
+function renderRtChart() {
+  const ctx = document.getElementById('rtChart');
+  if (!ctx) return;
+  const datasets = [];
+  if (DATA[RESTRICT_RT.p_up]) {
+    const vals = hourly(filterByRange(DATA[RESTRICT_RT.p_up].values));
+    datasets.push({label:'RT price ↑',data:vals.map(v=>({x:parseTime(v),y:v.value})),borderColor:'#ff5757',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3});
+  }
+  if (DATA[RESTRICT_RT.p_down]) {
+    const vals = hourly(filterByRange(DATA[RESTRICT_RT.p_down].values));
+    datasets.push({label:'RT price ↓',data:vals.map(v=>({x:parseTime(v),y:v.value})),borderColor:'#4dc8ff',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3});
+  }
+  charts.rt = new Chart(ctx, {
+    type:'line',
+    data:{datasets},
+    options:{
+      plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10}}},
+      scales:{
+        x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
+        y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}
+      },
+      maintainAspectRatio:false
+    }
+  });
+}
+
+// ── Init ──
+async function init() {
+  await loadAll();
+  render();
+}
+init();
+</script>
 </body>
 </html>
