@@ -6,7 +6,7 @@
 <title>DIED — Doran Iberian Energy Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
@@ -21,49 +21,82 @@
 html,body{background:var(--bg-0);color:var(--text-0);font-family:'Inter Tight',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");opacity:0.025;pointer-events:none;z-index:1000;mix-blend-mode:overlay}
 .mono{font-family:'JetBrains Mono',monospace;font-feature-settings:'tnum'}
-.serif{font-family:'Fraunces',serif}
 
+/* ── HEADER ── */
 header{border-bottom:1px solid var(--line);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;background:var(--bg-0);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
-.brand{display:flex;align-items:baseline;gap:14px}
-.brand-mark{font-family:'Fraunces',serif;font-weight:600;font-size:20px;letter-spacing:-0.02em}
-.brand-mark em{font-style:italic;font-weight:300;color:var(--accent)}
-.brand-sub{font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.12em}
-.header-meta{display:flex;gap:20px;align-items:center;font-size:12px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-title{font-family:'Playfair Display',serif;font-weight:800;font-size:28px;letter-spacing:-0.02em;color:var(--text-0);line-height:1}
+.brand-title span.hl{color:var(--accent)}
+.brand-acro{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.18em;background:rgba(212,255,77,0.08);border:1px solid rgba(212,255,77,0.2);padding:2px 7px;border-radius:2px;margin-left:2px}
+
+/* VERSION BADGE */
+.version-wrap{position:relative;display:inline-block;margin-left:10px}
+.version-badge{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-2);background:var(--bg-3);padding:2px 6px;border-radius:2px;cursor:default;letter-spacing:0.08em}
+.version-tooltip{display:none;position:absolute;top:calc(100% + 8px);left:0;background:var(--bg-2);border:1px solid var(--line);padding:14px 16px;border-radius:4px;width:280px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.version-wrap:hover .version-tooltip{display:block}
+.version-tooltip h4{font-family:'Inter Tight',sans-serif;font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px}
+.version-tooltip p{font-size:11px;color:var(--text-1);line-height:1.5;margin-bottom:4px}
+
+.header-right{display:flex;gap:16px;align-items:center;font-size:12px}
 .live-dot{display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:50%;margin-right:6px;animation:pulse 2s infinite;box-shadow:0 0 8px var(--accent)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 .meta-block{color:var(--text-1)}.meta-block strong{color:var(--text-0);font-weight:500}
 
-/* REFRESH BUTTON */
-.refresh-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border-radius:2px;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+/* REFRESH */
+.refresh-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:5px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border-radius:2px;transition:all 0.2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .refresh-btn:hover{background:var(--accent);color:var(--bg-0)}
 .refresh-btn.loading{opacity:0.5;pointer-events:none}
 .refresh-btn .spinner{display:none;width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite}
 .refresh-btn.loading .spinner{display:inline-block}
-.refresh-btn.loading .label{display:none}
+.refresh-btn.loading .rlabel{display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.filter-row{display:flex;gap:6px;padding:12px 32px;border-bottom:1px solid var(--line);background:var(--bg-1);align-items:center;flex-wrap:wrap}
-.filter-label{font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-2);margin-right:12px}
-.filter-btn{background:transparent;border:1px solid var(--line);color:var(--text-1);padding:5px 12px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border-radius:2px;transition:all 0.15s}
-.filter-btn:hover{color:var(--text-0);border-color:var(--text-2)}
-.filter-btn.active{background:var(--accent);color:var(--bg-0);border-color:var(--accent);font-weight:600}
-.filter-spacer{flex:1}
-.fetch-progress{font-size:10px;color:var(--text-2);font-family:'JetBrains Mono',monospace;margin-left:12px}
+/* ── FILTER ROW ── */
+.filter-row{display:flex;gap:8px;padding:10px 32px;border-bottom:1px solid var(--line);background:var(--bg-1);align-items:center;flex-wrap:wrap}
+.filter-label{font-size:10px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-2);margin-right:6px}
+.date-select{background:var(--bg-2);border:1px solid var(--line);color:var(--text-0);padding:5px 28px 5px 10px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border-radius:2px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7470' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
+.date-select:focus{outline:none;border-color:var(--accent)}
+.custom-range{display:none;align-items:center;gap:6px;margin-left:6px}
+.custom-range.visible{display:flex}
+.date-input{background:var(--bg-2);border:1px solid var(--line);color:var(--text-0);padding:4px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;border-radius:2px;color-scheme:dark}
+.date-input:focus{outline:none;border-color:var(--accent)}
+.apply-btn{background:var(--accent);color:var(--bg-0);border:none;padding:5px 10px;font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:600;cursor:pointer;border-radius:2px;letter-spacing:0.05em}
+.fetch-progress{font-size:10px;color:var(--text-2);font-family:'JetBrains Mono',monospace;margin-left:auto}
 
+/* ── LAYOUT ── */
 .container{padding:24px 32px 80px;max-width:1600px;margin:0 auto}
 .hero{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;margin-bottom:24px}
 @media(max-width:1100px){.hero{grid-template-columns:1fr}}
-.card{background:var(--bg-1);border:1px solid var(--line);border-radius:4px;padding:20px;position:relative}
-.card-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:0.16em;color:var(--text-2);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
-.card-title{font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em;margin-bottom:16px;line-height:1.15}
-.card-title em{font-style:italic;color:var(--text-1)}
 
-.price-now{display:flex;align-items:baseline;gap:18px;margin-bottom:6px;flex-wrap:wrap}
+/* ── CARD ── */
+.card{background:var(--bg-1);border:1px solid var(--line);border-radius:4px;padding:20px;position:relative}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.card-header-left{flex:1}
+.card-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:0.16em;color:var(--text-2);margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.card-eyebrow .esios-id{color:var(--accent-dim);font-family:'JetBrains Mono',monospace}
+.card-title{font-family:'Fraunces',serif;font-size:20px;font-weight:500;letter-spacing:-0.01em;line-height:1.2}
+
+/* INFO TOOLTIP */
+.info-btn{width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--text-2);font-size:11px;font-family:'Inter Tight',sans-serif;cursor:default;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;transition:border-color 0.15s}
+.info-btn:hover{border-color:var(--text-1);color:var(--text-0)}
+.info-tip{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--bg-2);border:1px solid var(--line);padding:12px 14px;border-radius:4px;width:260px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.5);font-family:'Inter Tight',sans-serif;font-size:11px;color:var(--text-1);line-height:1.5;font-weight:400;text-transform:none;letter-spacing:0}
+.info-btn:hover .info-tip{display:block}
+.info-tip strong{color:var(--text-0);font-weight:600}
+.info-tip .tip-source{margin-top:6px;font-size:10px;color:var(--text-2);font-family:'JetBrains Mono',monospace}
+
+/* SECTION HEADS */
+.section-head{display:flex;justify-content:space-between;align-items:baseline;margin:36px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line-soft)}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-dim);margin-right:8px}
+.section-title{font-family:'Fraunces',serif;font-size:14px;font-weight:500;color:var(--text-1)}
+.section-aside{font-size:11px;color:var(--text-2);font-family:'JetBrains Mono',monospace}
+
+/* PRICE */
+.price-now{display:flex;align-items:baseline;gap:18px;margin-bottom:8px;flex-wrap:wrap}
 .price-value{font-family:'Fraunces',serif;font-weight:500;font-size:64px;letter-spacing:-0.04em;line-height:0.95;color:var(--accent)}
-.price-unit{font-size:13px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.1em}
-.price-delta{font-family:'JetBrains Mono',monospace;font-size:13px}
-.price-context{color:var(--text-1);font-size:13px;margin-bottom:18px}
-.price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:18px}
+.price-unit{font-size:13px;color:var(--text-2);letter-spacing:0.05em}
+.price-sub{font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:4px}
+.price-context{color:var(--text-1);font-size:13px;margin-bottom:16px}
+.price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:16px}
 @media(max-width:800px){.price-grid{grid-template-columns:repeat(2,1fr)}}
 .price-cell{background:var(--bg-1);padding:12px 14px}
 .price-cell-label{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-2);margin-bottom:4px}
@@ -73,28 +106,29 @@ header{border-bottom:1px solid var(--line);padding:18px 32px;display:flex;justif
 .chart-wrap{position:relative;height:240px;margin-top:8px}
 .chart-wrap.tall{height:300px}
 
-.section-head{display:flex;justify-content:space-between;align-items:baseline;margin:36px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line-soft)}
-.section-title{font-family:'Fraunces',serif;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.22em;color:var(--text-1)}
-.section-title em{font-style:italic;color:var(--accent);text-transform:none;letter-spacing:0;font-weight:400;font-size:14px}
-.section-aside{font-size:11px;color:var(--text-2);font-family:'JetBrains Mono',monospace}
-
+/* GRIDS */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.grid-mix{display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
-@media(max-width:1100px){.grid-2,.grid-3,.grid-mix{grid-template-columns:1fr}}
+@media(max-width:1100px){.grid-2,.grid-3{grid-template-columns:1fr}}
 
+/* MIX */
 .mix-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .mix-row{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line-soft)}
 .mix-row:last-child{border-bottom:none}
 .mix-swatch{width:10px;height:10px;border-radius:1px}
-.mix-name{font-size:13px}.mix-pct{font-family:'JetBrains Mono',monospace;color:var(--text-1);font-size:12px}
+.mix-name{font-size:13px}
+.mix-pct{font-family:'JetBrains Mono',monospace;color:var(--text-1);font-size:12px}
 .mix-mw{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-0);min-width:70px;text-align:right}
 
+/* FLOWS */
 .flow-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 16px;background:var(--bg-2);border-radius:3px;gap:14px;margin-bottom:8px}
 .flow-country{font-family:'Fraunces',serif;font-size:18px}
 .flow-country.right{text-align:right}
 .flow-arrow{display:flex;flex-direction:column;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px}
 .flow-arrow .mw{font-size:15px;font-weight:600;color:var(--text-0)}
+
+/* DATA DELAY NOTE */
+.delay-note{font-size:10px;color:var(--text-2);font-family:'JetBrains Mono',monospace;padding:6px 32px;background:var(--bg-1);border-bottom:1px solid var(--line);letter-spacing:0.02em}
 
 footer{border-top:1px solid var(--line);padding:20px 32px;color:var(--text-2);font-size:11px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;gap:8px}
 footer em{color:var(--accent);font-style:normal}
@@ -107,33 +141,61 @@ footer em{color:var(--accent);font-style:normal}
 
 <header>
   <div class="brand">
-    <div class="brand-mark">DIED <em>·</em> Iberia Power</div>
-    <div class="brand-sub">Internal · v0.3</div>
+    <div class="brand-title">Doran <span class="hl">Iberian</span> Energy Dashboard</div>
+    <span class="brand-acro">DIED</span>
+    <div class="version-wrap">
+      <span class="version-badge">v0.4</span>
+      <div class="version-tooltip">
+        <h4>What's new in v0.4</h4>
+        <p>• Settled day-ahead average as hero price</p>
+        <p>• ES/PT price parity percentage</p>
+        <p>• Live refresh button (fetches direct from ESIOS)</p>
+        <p>• Dropdown date picker with custom range</p>
+        <p>• Info tooltips on every module</p>
+        <p>• Consistent numbering and ESIOS IDs</p>
+        <p>• Generation mix context-aware titles</p>
+      </div>
+    </div>
   </div>
-  <div class="header-meta">
+  <div class="header-right">
     <div class="meta-block"><span class="live-dot"></span><span id="refresh-status">loading...</span></div>
     <div class="meta-block" id="header-time"></div>
     <button class="refresh-btn" id="refresh-btn" onclick="liveRefresh()">
       <span class="spinner"></span>
-      <span class="label">↻ Refresh live</span>
+      <span class="rlabel">↻ Refresh</span>
     </button>
   </div>
 </header>
 
+<div class="delay-note">⏱ ESIOS data is typically delayed 1–2 hours from real-time. Day-ahead prices are published after the OMIE auction (≈13:00 CET for the following day).</div>
+
 <div class="filter-row">
-  <span class="filter-label">View</span>
-  <button class="filter-btn active" data-view="today" onclick="setView('today',this)">Today</button>
-  <button class="filter-btn" data-view="yesterday" onclick="setView('yesterday',this)">Yesterday</button>
-  <button class="filter-btn" data-view="7d" onclick="setView('7d',this)">7 days</button>
+  <span class="filter-label">Period</span>
+  <select class="date-select" id="period-select" onchange="onPeriodChange(this.value)">
+    <option value="today">Today</option>
+    <option value="yesterday">Yesterday</option>
+    <option value="7d">Last 7 days</option>
+    <option value="30d">Last 30 days</option>
+    <option value="mtd">Month to date</option>
+    <option value="qtd">Quarter to date</option>
+    <option value="ytd">Year to date</option>
+    <option value="custom">Custom range…</option>
+  </select>
+  <div class="custom-range" id="custom-range">
+    <input type="date" class="date-input" id="date-start"/>
+    <span style="color:var(--text-2);font-size:11px">→</span>
+    <input type="date" class="date-input" id="date-end"/>
+    <button class="apply-btn" onclick="applyCustomRange()">Apply</button>
+  </div>
   <span class="fetch-progress" id="fetch-progress"></span>
 </div>
 
 <div class="container" id="main-container">
-  <div class="loading-state" id="loading-msg">Loading cached data…</div>
+  <div class="loading-state" id="loading-msg">Loading…</div>
 </div>
 
 <footer>
-  <div>DIED — Doran Iberian Energy Dashboard · ESIOS API</div>
+  <div>DIED — Doran Iberian Energy Dashboard · Data: ESIOS / REE</div>
   <div id="footer-refresh"></div>
 </footer>
 
@@ -141,13 +203,8 @@ footer em{color:var(--accent);font-style:normal}
 // ── CONFIG ──
 const ESIOS_URL = 'https://api.esios.ree.es/indicators';
 const ESIOS_TOKEN = 'fb893cbed4169b886e2c680d6c901085a129213ac3628e8358a001441ef86e6e';
-const ESIOS_HEADERS = {
-  'Accept': 'application/json; application/vnd.esios-api-v2+json',
-  'Content-Type': 'application/json',
-  'x-api-key': ESIOS_TOKEN
-};
+const ESIOS_HEADERS = {'Accept':'application/json; application/vnd.esios-api-v2+json','Content-Type':'application/json','x-api-key':ESIOS_TOKEN};
 const CACHE_BASE = './data/';
-
 const GEO_ES = [3, 8741];
 const GEO_PT = [1];
 
@@ -161,327 +218,300 @@ const GEN_TECHS = [
   {id:'1297', name:'Cogen & other', color:'#ff5757'},
   {id:'2066', name:'Pumped hydro',  color:'#7a8a99'},
 ];
+const FLOW_IDS = {fr:'10207',pt:'10208',ma:'10209'};
+const ANC_IDS = {sec_up:'10388',sec_down:'10463',ter_up:'10386',ter_down:'10387'};
+const RESTRICT_PBF = {e_up_1:'701',e_down_1:'702',e_up_2:'703',e_down_2:'704',p_up_1:'705',p_down_1:'706',cost:'709'};
+const RESTRICT_RT = {p_up:'722',p_down:'723',cost:'724'};
 
-const FLOW_IDS = {fr:'10207', pt:'10208', ma:'10209'};
-const ANC_IDS = {sec_up:'10388', sec_down:'10463', ter_up:'10386', ter_down:'10387'};
-const RESTRICT_PBF = {e_up_1:'701', e_down_1:'702', e_up_2:'703', e_down_2:'704', p_up_1:'705', p_down_1:'706', cost:'709'};
-const RESTRICT_RT = {p_up:'722', p_down:'723', cost:'724'};
-
-// All indicator IDs
-function getAllIds() {
-  const ids = ['600',
-    ...GEN_TECHS.map(t=>t.id),
-    ...Object.values(FLOW_IDS),
-    ...Object.values(ANC_IDS),
-    ...Object.values(RESTRICT_PBF),
-    ...Object.values(RESTRICT_RT),
-    '10004','2276','10462','541'
-  ];
-  return [...new Set(ids)];
+function getAllIds(){
+  return [...new Set(['600',...GEN_TECHS.map(t=>t.id),...Object.values(FLOW_IDS),...Object.values(ANC_IDS),...Object.values(RESTRICT_PBF),...Object.values(RESTRICT_RT),'10004','2276','10462','541'])];
 }
 
-Chart.defaults.font.family = "'JetBrains Mono', monospace";
-Chart.defaults.font.size = 10;
-Chart.defaults.color = '#6b7470';
-Chart.defaults.borderColor = '#1a2129';
+Chart.defaults.font.family="'JetBrains Mono',monospace";Chart.defaults.font.size=10;Chart.defaults.color='#6b7470';Chart.defaults.borderColor='#1a2129';
 
-let DATA = {};
-let currentView = 'today';
-let charts = {};
-let lastRefreshTime = null;
-let dataSource = 'cache';
+let DATA={}, charts={}, lastRefreshTime=null, dataSource='cache';
+let currentPeriod='today', customStart=null, customEnd=null;
 
 // ── Helpers ──
-function filterByGeo(values, geoIds) {
-  if (!values || !values.length) return values || [];
-  return values.filter(v => geoIds.includes(v.geo_id));
-}
-function parseTime(v) { return new Date(v.datetime_utc || v.datetime); }
+function filterByGeo(v,g){return(v||[]).filter(x=>g.includes(x.geo_id))}
+function parseTime(v){return new Date(v.datetime_utc||v.datetime)}
+function fmt(n,d=2){return n!=null?n.toFixed(d):'—'}
+function fmtInt(n){return n!=null?Math.round(n).toLocaleString():'—'}
 
-function todayRange() {
-  const now = new Date();
-  const start = new Date(now); start.setHours(0,0,0,0);
-  const end = new Date(now); end.setHours(23,59,59,999);
-  return {start, end};
-}
-function yesterdayRange() {
-  const now = new Date();
-  const start = new Date(now); start.setDate(start.getDate()-1); start.setHours(0,0,0,0);
-  const end = new Date(now); end.setDate(end.getDate()-1); end.setHours(23,59,59,999);
-  return {start, end};
-}
-function weekRange() {
-  const now = new Date();
-  const start = new Date(now); start.setDate(start.getDate()-7); start.setHours(0,0,0,0);
-  return {start, end: now};
-}
-function getRange() {
-  if (currentView === 'yesterday') return yesterdayRange();
-  if (currentView === '7d') return weekRange();
-  return todayRange();
-}
-function filterByRange(values) {
-  const {start, end} = getRange();
-  return (values||[]).filter(v => { const t = parseTime(v); return t >= start && t <= end; });
-}
-function hourly(values) {
-  const byHour = {};
-  values.forEach(v => { const t = parseTime(v); const key = t.toISOString().slice(0,13); byHour[key] = v; });
-  return Object.values(byHour).sort((a,b) => parseTime(a) - parseTime(b));
-}
-function fmt(n, d=2) { return n != null ? n.toFixed(d) : '—'; }
-function fmtInt(n) { return n != null ? Math.round(n).toLocaleString() : '—'; }
-
-// ── Data loading: cached JSON files (fallback) ──
-async function loadCachedJSON(id) {
-  try {
-    const r = await fetch(`${CACHE_BASE}${id}.json`);
-    if (!r.ok) return null;
-    return await r.json();
-  } catch { return null; }
-}
-
-async function loadAllCached() {
-  const ids = [...getAllIds(), '_meta'];
-  const results = await Promise.all(ids.map(id => loadCachedJSON(id)));
-  ids.forEach((id, i) => { if (results[i]) DATA[id] = results[i]; });
-}
-
-// ── Data loading: live ESIOS fetch ──
-async function fetchESIOS(indicatorId, startDate, endDate) {
-  const url = `${ESIOS_URL}/${indicatorId}?start_date=${startDate}&end_date=${endDate}`;
-  const r = await fetch(url, { headers: ESIOS_HEADERS });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const json = await r.json();
-  const indicator = json.indicator || {};
-  return {
-    id: indicatorId,
-    name: indicator.name || '',
-    short_name: indicator.short_name || '',
-    fetched_at: new Date().toISOString(),
-    values: indicator.values || []
-  };
-}
-
-async function liveRefresh() {
-  const btn = document.getElementById('refresh-btn');
-  const progress = document.getElementById('fetch-progress');
-  btn.classList.add('loading');
-
-  const ids = getAllIds();
-  const now = new Date();
-  // Fetch 8 days to cover "7d" view plus today
-  const start = new Date(now); start.setDate(start.getDate() - 8);
-  const startStr = start.toISOString().slice(0,16);
-  const endStr = now.toISOString().slice(0,16);
-
-  let done = 0;
-  let errors = 0;
-
-  // Fetch in batches of 5 to avoid overwhelming the API
-  for (let i = 0; i < ids.length; i += 5) {
-    const batch = ids.slice(i, i + 5);
-    const results = await Promise.allSettled(
-      batch.map(id => fetchESIOS(id, startStr, endStr))
-    );
-    results.forEach((r, j) => {
-      if (r.status === 'fulfilled' && r.value) {
-        DATA[batch[j]] = r.value;
-        done++;
-      } else {
-        errors++;
-        done++;
-      }
-    });
-    progress.textContent = `fetching ${done}/${ids.length}...`;
+function getRange(){
+  const now=new Date();
+  const sod=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x};
+  const eod=d=>{const x=new Date(d);x.setHours(23,59,59,999);return x};
+  switch(currentPeriod){
+    case 'today': return {start:sod(now),end:eod(now),label:'Today'};
+    case 'yesterday':{const y=new Date(now);y.setDate(y.getDate()-1);return{start:sod(y),end:eod(y),label:'Yesterday'};}
+    case '7d':{const s=new Date(now);s.setDate(s.getDate()-7);return{start:sod(s),end:now,label:'Last 7 days'};}
+    case '30d':{const s=new Date(now);s.setDate(s.getDate()-30);return{start:sod(s),end:now,label:'Last 30 days'};}
+    case 'mtd':return{start:new Date(now.getFullYear(),now.getMonth(),1),end:now,label:'Month to date'};
+    case 'qtd':{const qm=[0,0,0,3,3,3,6,6,6,9,9,9][now.getMonth()];return{start:new Date(now.getFullYear(),qm,1),end:now,label:'Quarter to date'};}
+    case 'ytd':return{start:new Date(now.getFullYear(),0,1),end:now,label:'Year to date'};
+    case 'custom':return{start:customStart||sod(now),end:customEnd||eod(now),label:'Custom'};
+    default:return{start:sod(now),end:eod(now),label:'Today'};
   }
+}
+function filterByRange(values){const{start,end}=getRange();return(values||[]).filter(v=>{const t=parseTime(v);return t>=start&&t<=end})}
+function hourly(values){const m={};values.forEach(v=>{const k=parseTime(v).toISOString().slice(0,13);m[k]=v});return Object.values(m).sort((a,b)=>parseTime(a)-parseTime(b))}
+function timeUnit(){return['today','yesterday'].includes(currentPeriod)?'hour':['7d'].includes(currentPeriod)?'day':'day'}
 
-  lastRefreshTime = new Date();
-  dataSource = 'live';
-  progress.textContent = errors ? `${errors} failed` : '';
+function genPeriodLabel(){
+  switch(currentPeriod){
+    case 'today':return'today so far';case 'yesterday':return'full day yesterday';
+    case '7d':return'7-day average';case '30d':return'30-day average';
+    case 'mtd':return'month-to-date average';case 'qtd':return'quarter-to-date average';
+    case 'ytd':return'year-to-date average';case 'custom':return'selected period average';
+    default:return'';
+  }
+}
+
+// ── Period controls ──
+function onPeriodChange(val){
+  currentPeriod=val;
+  document.getElementById('custom-range').classList.toggle('visible',val==='custom');
+  if(val!=='custom'){destroyCharts();render();}
+}
+function applyCustomRange(){
+  const s=document.getElementById('date-start').value;
+  const e=document.getElementById('date-end').value;
+  if(s&&e){customStart=new Date(s+'T00:00:00');customEnd=new Date(e+'T23:59:59');destroyCharts();render();}
+}
+
+// ── Data loading ──
+async function loadCachedJSON(id){try{const r=await fetch(`${CACHE_BASE}${id}.json`);if(!r.ok)return null;return await r.json()}catch{return null}}
+async function loadAllCached(){const ids=[...getAllIds(),'_meta'];const r=await Promise.all(ids.map(loadCachedJSON));ids.forEach((id,i)=>{if(r[i])DATA[id]=r[i]})}
+
+async function fetchESIOS(id,s,e){
+  const r=await fetch(`${ESIOS_URL}/${id}?start_date=${s}&end_date=${e}`,{headers:ESIOS_HEADERS});
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  const j=await r.json();const ind=j.indicator||{};
+  return{id,name:ind.name||'',short_name:ind.short_name||'',fetched_at:new Date().toISOString(),values:ind.values||[]};
+}
+
+async function liveRefresh(){
+  const btn=document.getElementById('refresh-btn');
+  const prog=document.getElementById('fetch-progress');
+  btn.classList.add('loading');
+  const ids=getAllIds();const now=new Date();
+  const s=new Date(now);s.setDate(s.getDate()-8);
+  const ss=s.toISOString().slice(0,16),se=now.toISOString().slice(0,16);
+  let done=0;
+  for(let i=0;i<ids.length;i+=5){
+    const batch=ids.slice(i,i+5);
+    const results=await Promise.allSettled(batch.map(id=>fetchESIOS(id,ss,se)));
+    results.forEach((r,j)=>{if(r.status==='fulfilled'&&r.value)DATA[batch[j]]=r.value;done++});
+    prog.textContent=`${done}/${ids.length}`;
+  }
+  lastRefreshTime=new Date();dataSource='live';
   btn.classList.remove('loading');
-
-  // Clear progress after 3s
-  setTimeout(() => { progress.textContent = ''; }, 3000);
-
-  destroyCharts();
-  render();
+  setTimeout(()=>{prog.textContent=''},3000);
+  destroyCharts();render();
 }
 
 // ── Rendering ──
-function destroyCharts() { Object.values(charts).forEach(c => c.destroy()); charts = {}; }
+function destroyCharts(){Object.values(charts).forEach(c=>c.destroy());charts={}}
 
-function setView(view, btn) {
-  currentView = view;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  destroyCharts();
-  render();
+function infoButton(text, source){
+  return `<div class="info-btn">i<div class="info-tip">${text}${source?`<div class="tip-source">${source}</div>`:''}</div></div>`;
 }
 
-function render() {
+function render(){
   // Header
-  if (lastRefreshTime) {
-    document.getElementById('refresh-status').innerHTML =
-      `<strong>${dataSource}</strong> · refreshed ${lastRefreshTime.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
-  } else {
-    const meta = DATA['_meta'];
-    if (meta && meta.last_refresh) {
-      const d = new Date(meta.last_refresh);
-      lastRefreshTime = d;
-      dataSource = 'cache';
-      document.getElementById('refresh-status').innerHTML =
-        `<strong>cached</strong> · ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} UTC`;
-    }
-  }
-  document.getElementById('header-time').innerHTML =
-    new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) +
-    ' · <strong>' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + '</strong>';
-  document.getElementById('footer-refresh').innerHTML =
-    `Last refresh: <em>${lastRefreshTime ? lastRefreshTime.toLocaleString('en-GB') : 'never'}</em> (${dataSource})`;
+  if(lastRefreshTime){document.getElementById('refresh-status').innerHTML=`<strong>${dataSource}</strong> · ${lastRefreshTime.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`}
+  else{const m=DATA['_meta'];if(m&&m.last_refresh){lastRefreshTime=new Date(m.last_refresh);dataSource='cache';document.getElementById('refresh-status').innerHTML=`<strong>cached</strong> · ${lastRefreshTime.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} UTC`}}
+  document.getElementById('header-time').innerHTML=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+' · <strong>'+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</strong>';
+  document.getElementById('footer-refresh').innerHTML=`Last refresh: <em>${lastRefreshTime?lastRefreshTime.toLocaleString('en-GB'):'never'}</em> (${dataSource})`;
 
-  const spot = DATA['600'];
-  if (!spot || !spot.values || !spot.values.length) {
-    document.getElementById('main-container').innerHTML =
-      '<div class="loading-state" style="animation:none">No data available. Click <strong>↻ Refresh live</strong> to fetch from ESIOS.</div>';
-    return;
-  }
+  const spot=DATA['600'];
+  if(!spot||!spot.values||!spot.values.length){document.getElementById('main-container').innerHTML='<div class="loading-state" style="animation:none">No data. Click <strong>↻ Refresh</strong> to fetch from ESIOS.</div>';return}
 
-  const esSpot = filterByRange(filterByGeo(spot.values, [3]));
-  const ptSpot = filterByRange(filterByGeo(spot.values, [1]));
-  const esHourly = hourly(esSpot);
-  const ptHourly = hourly(ptSpot);
+  const{label:periodLabel}=getRange();
+  const esSpot=filterByRange(filterByGeo(spot.values,[3]));
+  const ptSpot=filterByRange(filterByGeo(spot.values,[1]));
+  const esH=hourly(esSpot), ptH=hourly(ptSpot);
 
-  const latest = esHourly.length ? esHourly[esHourly.length-1] : null;
-  const latestPt = ptHourly.length ? ptHourly[ptHourly.length-1] : null;
-  const prices = esHourly.map(v=>v.value);
-  const dayAvg = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : null;
-  const dayMax = prices.length ? Math.max(...prices) : null;
-  const dayMin = prices.length ? Math.min(...prices) : null;
-  const maxHour = esHourly.find(v=>v.value===dayMax);
-  const minHour = esHourly.find(v=>v.value===dayMin);
-  const spread = (latest && latestPt) ? latest.value - latestPt.value : null;
+  // Settled day-ahead average
+  const esPrices=esH.map(v=>v.value), ptPrices=ptH.map(v=>v.value);
+  const esAvg=esPrices.length?esPrices.reduce((a,b)=>a+b,0)/esPrices.length:null;
+  const ptAvg=ptPrices.length?ptPrices.reduce((a,b)=>a+b,0)/ptPrices.length:null;
+  const dayMax=esPrices.length?Math.max(...esPrices):null;
+  const dayMin=esPrices.length?Math.min(...esPrices):null;
+  const maxHour=esH.find(v=>v.value===dayMax);
+  const minHour=esH.find(v=>v.value===dayMin);
 
-  const genLatest = GEN_TECHS.map(t => {
-    const d = DATA[t.id];
-    if (!d || !d.values || !d.values.length) return {...t, mw:null};
-    const esVals = filterByRange(filterByGeo(d.values, GEO_ES));
-    const last = esVals.length ? esVals[esVals.length-1] : null;
-    return {...t, mw: last ? last.value : null};
+  // ES-PT parity: % of periods where prices match
+  let parityCount=0,totalPairs=0;
+  esH.forEach(es=>{const pt=ptH.find(p=>p.datetime_utc===es.datetime_utc||p.datetime===es.datetime);if(pt){totalPairs++;if(Math.abs(es.value-pt.value)<0.01)parityCount++}});
+  const parityPct=totalPairs?((parityCount/totalPairs)*100):null;
+
+  // Generation
+  const genData=GEN_TECHS.map(t=>{
+    const d=DATA[t.id];if(!d||!d.values)return{...t,mw:null};
+    const vals=filterByRange(filterByGeo(d.values,GEO_ES));
+    if(!vals.length)return{...t,mw:null};
+    if(['today','yesterday'].includes(currentPeriod)){return{...t,mw:vals[vals.length-1].value}}
+    const avg=vals.reduce((s,v)=>s+v.value,0)/vals.length;
+    return{...t,mw:Math.round(avg)};
   });
-  const totalGen = genLatest.reduce((s,g) => s + (g.mw||0), 0);
+  const totalGen=genData.reduce((s,g)=>s+(g.mw||0),0);
 
-  const flowData = {};
-  ['fr','pt','ma'].forEach(key => {
-    const d = DATA[FLOW_IDS[key]];
-    if (!d || !d.values) { flowData[key] = null; return; }
-    const vals = filterByRange(d.values);
-    flowData[key] = vals.length ? vals[vals.length-1].value : null;
-  });
+  // Flows
+  const flowData={};
+  ['fr','pt','ma'].forEach(k=>{const d=DATA[FLOW_IDS[k]];if(!d||!d.values){flowData[k]=null;return}const v=filterByRange(d.values);flowData[k]=v.length?v[v.length-1].value:null});
 
-  const container = document.getElementById('main-container');
-  container.innerHTML = `
+  const c=document.getElementById('main-container');
+  c.innerHTML=`
+  <!-- 1. SPOT PRICE -->
   <div class="hero">
     <div class="card">
-      <div class="card-eyebrow"><span>Day-ahead spot · MIBEL</span><span class="mono">ID 600</span></div>
-      <h2 class="card-title">Spot price <em>${currentView}</em></h2>
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-eyebrow"><span>Day-ahead spot price · MIBEL</span><span class="esios-id">ESIOS 600</span></div>
+          <div class="card-title">1. Spot Price</div>
+        </div>
+        ${infoButton('<strong>Day-ahead electricity price</strong> cleared at the OMIE auction. The hero figure is the arithmetic average of all quarter-hourly periods for the selected timeframe. Prices shown for both Spain and Portugal.','Source: ESIOS indicator 600 (OMIE day-ahead)')}
+      </div>
       <div class="price-now">
-        <div class="price-value">${latest ? fmt(latest.value) : '—'}</div>
+        <div class="price-value">€${fmt(esAvg)}</div>
         <div>
-          <div class="price-unit">€/MWh · ${latest ? parseTime(latest).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''} CET</div>
-          ${spread !== null && Math.abs(spread) > 0.01 ? `<div class="price-delta" style="color:${spread>0?'var(--hot)':'var(--green)'}">ES-PT spread: ${spread>0?'+':''}${fmt(spread)} €/MWh</div>` : `<div class="price-delta" style="color:var(--green)">ES = PT (coupled)</div>`}
+          <div class="price-unit">€/MWh · settled day-ahead avg · ${periodLabel}</div>
+          <div class="price-sub" style="color:var(--text-1)">Portugal avg: €${fmt(ptAvg)} /MWh</div>
         </div>
       </div>
       <div class="price-context">
-        Day avg <span class="mono" style="color:var(--text-0)">€${fmt(dayAvg)}</span> ·
         Range <span class="mono">€${fmt(dayMin)}</span> – <span class="mono" style="color:var(--accent)">€${fmt(dayMax)}</span>
+        ${parityPct!=null?` · ES/PT parity: <span class="mono" style="color:${parityPct>80?'var(--green)':parityPct>50?'var(--warm)':'var(--hot)'}">${fmt(parityPct,1)}%</span> of periods`:''}
       </div>
       <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
       <div class="price-grid">
-        <div class="price-cell"><div class="price-cell-label">Day avg</div><div class="price-cell-value">€${fmt(dayAvg)}</div></div>
-        <div class="price-cell"><div class="price-cell-label">Peak</div><div class="price-cell-value">€${fmt(dayMax)}</div><div class="price-cell-sub">${maxHour ? parseTime(maxHour).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''}</div></div>
-        <div class="price-cell"><div class="price-cell-label">Low</div><div class="price-cell-value">€${fmt(dayMin)}</div><div class="price-cell-sub">${minHour ? parseTime(minHour).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : ''}</div></div>
-        <div class="price-cell"><div class="price-cell-label">Portugal</div><div class="price-cell-value">€${latestPt ? fmt(latestPt.value) : '—'}</div></div>
+        <div class="price-cell"><div class="price-cell-label">ES average</div><div class="price-cell-value">€${fmt(esAvg)}</div></div>
+        <div class="price-cell"><div class="price-cell-label">Peak</div><div class="price-cell-value">€${fmt(dayMax)}</div><div class="price-cell-sub">${maxHour?parseTime(maxHour).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}</div></div>
+        <div class="price-cell"><div class="price-cell-label">Trough</div><div class="price-cell-value">€${fmt(dayMin)}</div><div class="price-cell-sub">${minHour?parseTime(minHour).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):''}</div></div>
+        <div class="price-cell"><div class="price-cell-label">ES/PT parity</div><div class="price-cell-value">${parityPct!=null?fmt(parityPct,1)+'%':'—'}</div><div class="price-cell-sub">${parityCount}/${totalPairs} periods</div></div>
       </div>
     </div>
 
+    <!-- 2. GENERATION MIX SNAPSHOT -->
     <div class="card">
-      <div class="card-eyebrow"><span>Generation · latest</span><span class="mono">${totalGen ? fmtInt(totalGen)+' MW' : ''}</span></div>
-      <h2 class="card-title">Current <em>generation mix</em></h2>
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-eyebrow"><span>Generation by technology</span><span class="esios-id">ESIOS 1295 2038 2039 2041 +4</span></div>
+          <div class="card-title">2. Generation Mix — ${genPeriodLabel()}</div>
+        </div>
+        ${infoButton(`<strong>Generation mix</strong> for Spain by technology. <strong>${genPeriodLabel()}</strong>: ${['today','yesterday'].includes(currentPeriod)?'shows the latest available reading.':'shows the average MW output across all readings in the period.'}`, 'Source: ESIOS real-time generation indicators')}
+      </div>
       <div class="mix-list">
-        ${genLatest.sort((a,b)=>(b.mw||0)-(a.mw||0)).map(g => `
+        ${genData.sort((a,b)=>(b.mw||0)-(a.mw||0)).map(g=>`
           <div class="mix-row">
             <div class="mix-swatch" style="background:${g.color}"></div>
             <div class="mix-name">${g.name}</div>
-            <div class="mix-pct">${totalGen && g.mw ? fmt((g.mw/totalGen)*100,1)+'%' : '—'}</div>
-            <div class="mix-mw">${g.mw ? fmtInt(g.mw)+' MW' : '—'}</div>
-          </div>
-        `).join('')}
+            <div class="mix-pct">${totalGen&&g.mw?fmt((g.mw/totalGen)*100,1)+'%':'—'}</div>
+            <div class="mix-mw">${g.mw?fmtInt(g.mw)+' MW':'—'}</div>
+          </div>`).join('')}
       </div>
       <div class="chart-wrap" style="margin-top:16px"><canvas id="genPieChart"></canvas></div>
     </div>
   </div>
 
+  <!-- 3. GENERATION STACKED AREA -->
   <div class="section-head">
-    <div class="section-title">01 · Generation <em>mix</em></div>
-    <div class="section-aside">stacked area · MW · ${currentView}</div>
+    <div><span class="section-num">03</span><span class="section-title">Generation Time Series</span></div>
+    <div class="section-aside">${periodLabel} · stacked MW</div>
   </div>
   <div class="card">
-    <div class="card-eyebrow"><span>Spain · by technology</span><span class="mono">real-time 5-min</span></div>
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-eyebrow"><span>Spain generation by technology</span><span class="esios-id">ESIOS 1295 2038 2039 2041 10035 1294 1297 2066</span></div>
+        <div class="card-title">3. Generation Over Time</div>
+      </div>
+      ${infoButton('<strong>Stacked area chart</strong> showing real-time generation output by technology. Data at 5-minute intervals, downsampled for display.','Source: ESIOS real-time generation indicators')}
+    </div>
     <div class="chart-wrap tall"><canvas id="genStackChart"></canvas></div>
   </div>
 
+  <!-- 4. CROSS-BORDER FLOWS -->
   <div class="section-head">
-    <div class="section-title">02 · Cross-border <em>flows</em></div>
-    <div class="section-aside">MW · positive = ES exporting</div>
+    <div><span class="section-num">04</span><span class="section-title">Cross-Border Flows</span></div>
+    <div class="section-aside">${periodLabel} · MW</div>
   </div>
   <div class="grid-2">
     <div class="card">
-      <div class="card-eyebrow"><span>Live interconnector balance</span><span class="mono">telemedidas</span></div>
-      <h3 class="card-title">Inter<em>connectors</em></h3>
-      ${renderFlow('🇪🇸 ES','🇫🇷 FR', flowData.fr)}
-      ${renderFlow('🇪🇸 ES','🇵🇹 PT', flowData.pt)}
-      ${renderFlow('🇪🇸 ES','🇲🇦 MA', flowData.ma)}
-      <div style="font-size:11px;color:var(--text-2);margin-top:12px;font-family:'JetBrains Mono',monospace;">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-eyebrow"><span>Interconnector balance</span><span class="esios-id">ESIOS 10207 10208 10209</span></div>
+          <div class="card-title">4a. Interconnectors</div>
+        </div>
+        ${infoButton('<strong>Net telemetered flows</strong> on each interconnector. Positive = Spain exporting, negative = importing. Shows the latest available reading for the selected period.','Source: ESIOS telemedidas indicators')}
+      </div>
+      ${renderFlow('🇪🇸 ES','🇫🇷 FR',flowData.fr)}
+      ${renderFlow('🇪🇸 ES','🇵🇹 PT',flowData.pt)}
+      ${renderFlow('🇪🇸 ES','🇲🇦 MA',flowData.ma)}
+      <div style="font-size:11px;color:var(--text-2);margin-top:12px;font-family:'JetBrains Mono',monospace">
         Net: <span style="color:var(--accent)">${fmtInt((flowData.fr||0)+(flowData.pt||0)+(flowData.ma||0))} MW ${((flowData.fr||0)+(flowData.pt||0)+(flowData.ma||0))>=0?'exporter':'importer'}</span>
       </div>
     </div>
     <div class="card">
-      <div class="card-eyebrow"><span>France flow · ${currentView}</span><span class="mono">ID 10207</span></div>
-      <h3 class="card-title">ES ↔ FR <em>flow</em></h3>
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-eyebrow"><span>France flow over time</span><span class="esios-id">ESIOS 10207</span></div>
+          <div class="card-title">4b. ES ↔ FR Flow</div>
+        </div>
+        ${infoButton('<strong>ES-France flow</strong> over time. Positive bars = Spain exporting to France. Negative = importing from France.','Source: ESIOS 10207')}
+      </div>
       <div class="chart-wrap"><canvas id="flowChart"></canvas></div>
     </div>
   </div>
 
+  <!-- 5. ANCILLARY SERVICES -->
   <div class="section-head">
-    <div class="section-title">03 · Ancillary <em>services</em></div>
-    <div class="section-aside">secondary &amp; tertiary · €/MWh</div>
+    <div><span class="section-num">05</span><span class="section-title">Ancillary Services</span></div>
+    <div class="section-aside">${periodLabel} · €/MWh</div>
   </div>
   <div class="card">
-    <div class="card-eyebrow"><span>Reserve prices · ${currentView}</span><span class="mono">weighted avg</span></div>
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-eyebrow"><span>Secondary &amp; tertiary reserve prices</span><span class="esios-id">ESIOS 10388 10463 10386 10387</span></div>
+        <div class="card-title">5. Reserve Prices</div>
+      </div>
+      ${infoButton('<strong>Weighted average prices</strong> for secondary (aFRR) and tertiary (mFRR) reserves, both upward and downward regulation.','Source: ESIOS 10388, 10463, 10386, 10387')}
+    </div>
     <div class="chart-wrap tall"><canvas id="ancChart"></canvas></div>
   </div>
 
+  <!-- 6. TECHNICAL RESTRICTIONS -->
   <div class="section-head">
-    <div class="section-title">04 · Technical <em>restrictions</em></div>
-    <div class="section-aside">PBF (day-ahead) + real-time</div>
+    <div><span class="section-num">06</span><span class="section-title">Technical Restrictions</span></div>
+    <div class="section-aside">${periodLabel}</div>
   </div>
   <div class="grid-2">
     <div class="card">
-      <div class="card-eyebrow"><span>PBF day-ahead</span><span class="mono">energy MWh</span></div>
-      <h3 class="card-title">Day-ahead <em>PBF</em></h3>
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-eyebrow"><span>PBF day-ahead restrictions</span><span class="esios-id">ESIOS 701 702</span></div>
+          <div class="card-title">6a. Day-Ahead (PBF)</div>
+        </div>
+        ${infoButton('<strong>Day-ahead technical restrictions</strong> (Phase I). Energy assigned upward and downward to resolve network constraints identified in the daily base operating programme (PBF).','Source: ESIOS 701, 702')}
+      </div>
       <div class="chart-wrap"><canvas id="pbfChart"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-eyebrow"><span>Real-time restrictions</span><span class="mono">€/MWh</span></div>
-      <h3 class="card-title">Real-time <em>RT</em></h3>
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-eyebrow"><span>Real-time restriction prices</span><span class="esios-id">ESIOS 722 723</span></div>
+          <div class="card-title">6b. Real-Time (RT)</div>
+        </div>
+        ${infoButton('<strong>Real-time technical restriction prices</strong> (upward and downward). Average price paid to resolve real-time network constraints.','Source: ESIOS 722, 723')}
+      </div>
       <div class="chart-wrap"><canvas id="rtChart"></canvas></div>
     </div>
   </div>
   `;
 
-  renderPriceChart(esHourly, ptHourly);
-  renderGenPie(genLatest, totalGen);
+  renderPriceChart(esH,ptH);
+  renderGenPie(genData,totalGen);
   renderGenStack();
   renderFlowChart();
   renderAncChart();
@@ -489,137 +519,69 @@ function render() {
   renderRtChart();
 }
 
-function renderFlow(from, to, mw) {
-  const exp = mw == null ? true : mw >= 0;
-  const arrow = exp
-    ? `<svg width="60" height="14" viewBox="0 0 60 14"><path d="M0 7 L52 7 M48 3 L52 7 L48 11" stroke="#4dc8ff" stroke-width="1.5" fill="none"/></svg>`
-    : `<svg width="60" height="14" viewBox="0 0 60 14"><path d="M60 7 L8 7 M12 3 L8 7 L12 11" stroke="#ff8c42" stroke-width="1.5" fill="none"/></svg>`;
-  return `<div class="flow-row">
-    <div class="flow-country">${from}</div>
-    <div class="flow-arrow"><span class="mw">${mw!=null?(exp?'+':'')+fmtInt(mw)+' MW':'—'}</span>${arrow}<span>${mw!=null?(exp?'exporting':'importing'):''}</span></div>
-    <div class="flow-country right">${to}</div>
-  </div>`;
+function renderFlow(from,to,mw){
+  const exp=mw==null?true:mw>=0;
+  const arrow=exp?`<svg width="60" height="14" viewBox="0 0 60 14"><path d="M0 7 L52 7 M48 3 L52 7 L48 11" stroke="#4dc8ff" stroke-width="1.5" fill="none"/></svg>`:`<svg width="60" height="14" viewBox="0 0 60 14"><path d="M60 7 L8 7 M12 3 L8 7 L12 11" stroke="#ff8c42" stroke-width="1.5" fill="none"/></svg>`;
+  return`<div class="flow-row"><div class="flow-country">${from}</div><div class="flow-arrow"><span class="mw">${mw!=null?(exp?'+':'')+fmtInt(mw)+' MW':'—'}</span>${arrow}<span>${mw!=null?(exp?'exporting':'importing'):''}</span></div><div class="flow-country right">${to}</div></div>`;
 }
 
-function renderPriceChart(esData, ptData) {
-  const ctx = document.getElementById('priceChart'); if (!ctx) return;
-  charts.price = new Chart(ctx, {
-    type:'line',
-    data:{datasets:[
-      {label:'Portugal', data:ptData.map(v=>({x:parseTime(v),y:v.value})), borderColor:'#3a4350', backgroundColor:'transparent', borderWidth:1.2, borderDash:[3,3], pointRadius:0, tension:0.3},
-      {label:'Spain', data:esData.map(v=>({x:parseTime(v),y:v.value})), borderColor:'#d4ff4d', backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(212,255,77,0.25)');g.addColorStop(1,'rgba(212,255,77,0)');return g;}, borderWidth:2, pointRadius:0, fill:true, tension:0.3}
-    ]},
-    options:{
-      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},
-      scales:{x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
-              y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},
-      maintainAspectRatio:false, interaction:{mode:'index',intersect:false}
-    }
-  });
+function renderPriceChart(es,pt){
+  const ctx=document.getElementById('priceChart');if(!ctx)return;
+  charts.price=new Chart(ctx,{type:'line',data:{datasets:[
+    {label:'Portugal',data:pt.map(v=>({x:parseTime(v),y:v.value})),borderColor:'#3a4350',backgroundColor:'transparent',borderWidth:1.2,borderDash:[3,3],pointRadius:0,tension:0.3},
+    {label:'Spain',data:es.map(v=>({x:parseTime(v),y:v.value})),borderColor:'#d4ff4d',backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(212,255,77,0.25)');g.addColorStop(1,'rgba(212,255,77,0)');return g},borderWidth:2,pointRadius:0,fill:true,tension:0.3}
+  ]},options:{plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},scales:{x:{type:'time',time:{unit:timeUnit(),displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},maintainAspectRatio:false,interaction:{mode:'index',intersect:false}}});
 }
 
-function renderGenPie(genData, total) {
-  const ctx = document.getElementById('genPieChart'); if (!ctx||!total) return;
-  const f = genData.filter(g => g.mw > 0);
-  charts.genPie = new Chart(ctx, {
-    type:'doughnut',
-    data:{labels:f.map(g=>g.name), datasets:[{data:f.map(g=>g.mw), backgroundColor:f.map(g=>g.color), borderWidth:0}]},
-    options:{plugins:{legend:{display:false}}, cutout:'65%', maintainAspectRatio:false}
-  });
+function renderGenPie(gd,total){
+  const ctx=document.getElementById('genPieChart');if(!ctx||!total)return;
+  const f=gd.filter(g=>g.mw>0);
+  charts.genPie=new Chart(ctx,{type:'doughnut',data:{labels:f.map(g=>g.name),datasets:[{data:f.map(g=>g.mw),backgroundColor:f.map(g=>g.color),borderWidth:0}]},options:{plugins:{legend:{display:false}},cutout:'65%',maintainAspectRatio:false}});
 }
 
-function renderGenStack() {
-  const ctx = document.getElementById('genStackChart'); if (!ctx) return;
-  const datasets = GEN_TECHS.map(tech => {
-    const d = DATA[tech.id]; if (!d||!d.values) return null;
-    const vals = filterByRange(filterByGeo(d.values, GEO_ES));
-    const sampled = []; for (let i=0;i<vals.length;i+=3) sampled.push(vals[i]);
-    return {label:tech.name, data:sampled.map(v=>({x:parseTime(v),y:v.value})), borderColor:tech.color, backgroundColor:tech.color+'80', fill:true, borderWidth:0.5, pointRadius:0, tension:0.3};
-  }).filter(Boolean);
-  charts.genStack = new Chart(ctx, {
-    type:'line', data:{datasets},
-    options:{
-      plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},
-      scales:{x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},stacked:true,grid:{display:false}},
-              y:{stacked:true,grid:{color:'#1a2129'},ticks:{callback:v=>(v/1000).toFixed(0)+' GW'}}},
-      maintainAspectRatio:false, interaction:{mode:'index',intersect:false}
-    }
-  });
+function renderGenStack(){
+  const ctx=document.getElementById('genStackChart');if(!ctx)return;
+  const ds=GEN_TECHS.map(t=>{const d=DATA[t.id];if(!d||!d.values)return null;const v=filterByRange(filterByGeo(d.values,GEO_ES));const s=[];for(let i=0;i<v.length;i+=3)s.push(v[i]);return{label:t.name,data:s.map(x=>({x:parseTime(x),y:x.value})),borderColor:t.color,backgroundColor:t.color+'80',fill:true,borderWidth:0.5,pointRadius:0,tension:0.3}}).filter(Boolean);
+  charts.genStack=new Chart(ctx,{type:'line',data:{datasets:ds},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},scales:{x:{type:'time',time:{unit:timeUnit(),displayFormats:{hour:'HH:mm',day:'dd MMM'}},stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:'#1a2129'},ticks:{callback:v=>(v/1000).toFixed(0)+' GW'}}},maintainAspectRatio:false,interaction:{mode:'index',intersect:false}}});
 }
 
-function renderFlowChart() {
-  const ctx = document.getElementById('flowChart'); if (!ctx) return;
-  const d = DATA[FLOW_IDS.fr]; if (!d||!d.values) return;
-  const vals = hourly(filterByRange(d.values));
-  const points = vals.map(v=>({x:parseTime(v),y:v.value}));
-  charts.flow = new Chart(ctx, {
-    type:'bar', data:{datasets:[{label:'ES→FR (MW)', data:points, backgroundColor:points.map(p=>p.y>=0?'#4dc8ff':'#ff8c42'), borderWidth:0}]},
-    options:{plugins:{legend:{display:false}},
-      scales:{x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
-              y:{grid:{color:'#1a2129'},ticks:{callback:v=>v+' MW'}}},
-      maintainAspectRatio:false}
-  });
+function renderFlowChart(){
+  const ctx=document.getElementById('flowChart');if(!ctx)return;
+  const d=DATA[FLOW_IDS.fr];if(!d||!d.values)return;
+  const v=hourly(filterByRange(d.values));const pts=v.map(x=>({x:parseTime(x),y:x.value}));
+  charts.flow=new Chart(ctx,{type:'bar',data:{datasets:[{label:'ES→FR (MW)',data:pts,backgroundColor:pts.map(p=>p.y>=0?'#4dc8ff':'#ff8c42'),borderWidth:0}]},options:{plugins:{legend:{display:false}},scales:{x:{type:'time',time:{unit:timeUnit(),displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},y:{grid:{color:'#1a2129'},ticks:{callback:v=>v+' MW'}}},maintainAspectRatio:false}});
 }
 
-function renderAncChart() {
-  const ctx = document.getElementById('ancChart'); if (!ctx) return;
-  const colors = {sec_up:'#d4ff4d',sec_down:'#8a9e3d',ter_up:'#4dc8ff',ter_down:'#2a7a9e'};
-  const labels = {sec_up:'Secondary ↑',sec_down:'Secondary ↓',ter_up:'Tertiary ↑',ter_down:'Tertiary ↓'};
-  const datasets = Object.entries(ANC_IDS).map(([key,id])=>{
-    const d = DATA[id]; if (!d||!d.values) return null;
-    const vals = hourly(filterByRange(d.values));
-    return {label:labels[key], data:vals.map(v=>({x:parseTime(v),y:v.value})), borderColor:colors[key], backgroundColor:'transparent', borderWidth:1.5, pointRadius:0, tension:0.3};
-  }).filter(Boolean);
-  charts.anc = new Chart(ctx, {
-    type:'line', data:{datasets},
-    options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},
-      scales:{x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
-              y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},
-      maintainAspectRatio:false, interaction:{mode:'index',intersect:false}}
-  });
+function renderAncChart(){
+  const ctx=document.getElementById('ancChart');if(!ctx)return;
+  const colors={sec_up:'#d4ff4d',sec_down:'#8a9e3d',ter_up:'#4dc8ff',ter_down:'#2a7a9e'};
+  const labels={sec_up:'Secondary ↑',sec_down:'Secondary ↓',ter_up:'Tertiary ↑',ter_down:'Tertiary ↓'};
+  const ds=Object.entries(ANC_IDS).map(([k,id])=>{const d=DATA[id];if(!d||!d.values)return null;const v=hourly(filterByRange(d.values));return{label:labels[k],data:v.map(x=>({x:parseTime(x),y:x.value})),borderColor:colors[k],backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3}}).filter(Boolean);
+  charts.anc=new Chart(ctx,{type:'line',data:{datasets:ds},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10,font:{size:10}}}},scales:{x:{type:'time',time:{unit:timeUnit(),displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},maintainAspectRatio:false,interaction:{mode:'index',intersect:false}}});
 }
 
-function renderPbfChart() {
-  const ctx = document.getElementById('pbfChart'); if (!ctx) return;
-  const datasets = [];
-  const upD = DATA[RESTRICT_PBF.e_up_1];
-  const downD = DATA[RESTRICT_PBF.e_down_1];
-  if (upD&&upD.values) { const v=hourly(filterByRange(upD.values)); datasets.push({label:'Phase I ↑',data:v.map(x=>({x:parseTime(x),y:x.value})),backgroundColor:'#ff5757',borderWidth:0}); }
-  if (downD&&downD.values) { const v=hourly(filterByRange(downD.values)); datasets.push({label:'Phase I ↓',data:v.map(x=>({x:parseTime(x),y:-Math.abs(x.value)})),backgroundColor:'#4dc8ff',borderWidth:0}); }
-  charts.pbf = new Chart(ctx, {
-    type:'bar', data:{datasets},
-    options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10}}},
-      scales:{x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
-              y:{grid:{color:'#1a2129'},ticks:{callback:v=>v+' MWh'}}},
-      maintainAspectRatio:false}
-  });
+function renderPbfChart(){
+  const ctx=document.getElementById('pbfChart');if(!ctx)return;
+  const ds=[];
+  const u=DATA[RESTRICT_PBF.e_up_1],d2=DATA[RESTRICT_PBF.e_down_1];
+  if(u&&u.values){const v=hourly(filterByRange(u.values));ds.push({label:'Phase I ↑',data:v.map(x=>({x:parseTime(x),y:x.value})),backgroundColor:'#ff5757',borderWidth:0})}
+  if(d2&&d2.values){const v=hourly(filterByRange(d2.values));ds.push({label:'Phase I ↓',data:v.map(x=>({x:parseTime(x),y:-Math.abs(x.value)})),backgroundColor:'#4dc8ff',borderWidth:0})}
+  charts.pbf=new Chart(ctx,{type:'bar',data:{datasets:ds},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10}}},scales:{x:{type:'time',time:{unit:timeUnit(),displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},y:{grid:{color:'#1a2129'},ticks:{callback:v=>v+' MWh'}}},maintainAspectRatio:false}});
 }
 
-function renderRtChart() {
-  const ctx = document.getElementById('rtChart'); if (!ctx) return;
-  const datasets = [];
-  if (DATA[RESTRICT_RT.p_up]&&DATA[RESTRICT_RT.p_up].values) { const v=hourly(filterByRange(DATA[RESTRICT_RT.p_up].values)); datasets.push({label:'RT price ↑',data:v.map(x=>({x:parseTime(x),y:x.value})),borderColor:'#ff5757',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3}); }
-  if (DATA[RESTRICT_RT.p_down]&&DATA[RESTRICT_RT.p_down].values) { const v=hourly(filterByRange(DATA[RESTRICT_RT.p_down].values)); datasets.push({label:'RT price ↓',data:v.map(x=>({x:parseTime(x),y:x.value})),borderColor:'#4dc8ff',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3}); }
-  charts.rt = new Chart(ctx, {
-    type:'line', data:{datasets},
-    options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10}}},
-      scales:{x:{type:'time',time:{unit:currentView==='7d'?'day':'hour',displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},
-              y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},
-      maintainAspectRatio:false}
-  });
+function renderRtChart(){
+  const ctx=document.getElementById('rtChart');if(!ctx)return;
+  const ds=[];
+  if(DATA[RESTRICT_RT.p_up]&&DATA[RESTRICT_RT.p_up].values){const v=hourly(filterByRange(DATA[RESTRICT_RT.p_up].values));ds.push({label:'RT price ↑',data:v.map(x=>({x:parseTime(x),y:x.value})),borderColor:'#ff5757',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3})}
+  if(DATA[RESTRICT_RT.p_down]&&DATA[RESTRICT_RT.p_down].values){const v=hourly(filterByRange(DATA[RESTRICT_RT.p_down].values));ds.push({label:'RT price ↓',data:v.map(x=>({x:parseTime(x),y:x.value})),borderColor:'#4dc8ff',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3})}
+  charts.rt=new Chart(ctx,{type:'line',data:{datasets:ds},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,padding:10}}},scales:{x:{type:'time',time:{unit:timeUnit(),displayFormats:{hour:'HH:mm',day:'dd MMM'}},grid:{display:false}},y:{grid:{color:'#1a2129'},ticks:{callback:v=>'€'+v}}},maintainAspectRatio:false}});
 }
 
 // ── Init ──
-async function init() {
-  // Try cached data first (fast), then user can click refresh for live
+async function init(){
   await loadAllCached();
-  if (DATA['600'] && DATA['600'].values && DATA['600'].values.length) {
-    render();
-  } else {
-    // No cached data available — auto-fetch live
-    document.getElementById('loading-msg').textContent = 'No cached data — fetching live from ESIOS…';
-    await liveRefresh();
-  }
+  if(DATA['600']&&DATA['600'].values&&DATA['600'].values.length){render()}
+  else{document.getElementById('loading-msg').textContent='No cached data — fetching live…';await liveRefresh()}
 }
 init();
 </script>
